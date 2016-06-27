@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -26,6 +27,7 @@ public class WebServer {
 
     /**
      * Class constructor that uses a given port.
+     * @param port Port used by the server.
      */
     public WebServer(int port) {
         this.port = port;
@@ -81,7 +83,16 @@ public class WebServer {
             }
         }
 
-        threadPool.shutdown();
+        try {
+            threadPool.shutdown();
+            threadPool.awaitTermination(5, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException ex) {
+            logger.warning("Running tasks interrupted");
+        }
+        finally {
+            threadPool.shutdownNow();
+        }
     }
 
     /**

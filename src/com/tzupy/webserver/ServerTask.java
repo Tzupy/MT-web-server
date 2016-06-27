@@ -1,8 +1,6 @@
 package com.tzupy.webserver;
 
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
@@ -15,6 +13,9 @@ public class ServerTask implements Callable<Void> {
     private static final Logger logger = Logger.getLogger(ServerTask.class.getCanonicalName());
 
     private final Socket clientSocket;
+
+    private final int bufferSize = 1024;
+    private final StringBuilder buffer = new StringBuilder(bufferSize);
 
     /**
      * Class constructor receiving the client socket.
@@ -32,11 +33,26 @@ public class ServerTask implements Callable<Void> {
     @Override
     public Void call() throws Exception {
         try {
-            // write some feedback to the client
-            Writer out = new OutputStreamWriter(clientSocket.getOutputStream());
-            out.write("Happily connected!\r\n");
+            Reader in = new InputStreamReader(new BufferedInputStream(clientSocket.getInputStream()));
+            Writer out = new OutputStreamWriter(new BufferedOutputStream(clientSocket.getOutputStream()));
+
+            HtmlGenerator htmlGenerator = new HtmlGenerator("Web server");
+
             String ip = clientSocket.getInetAddress().getHostAddress();
-            out.write("Client address is: " + ip + ":" + clientSocket.getPort() + "\r\n");
+            htmlGenerator.addLine("Client address is: " + ip + ":" + clientSocket.getPort());
+
+            // read client request in a buffer
+            buffer.setLength(0);
+            int c;
+            while ((c = in.read()) != -1) {
+                if (c == '\r' || c == '\n' || c == -1) break;
+                buffer.append((char) c);
+            }
+
+            htmlGenerator.addLine("Client request was: " + buffer.toString());
+
+            out.write(htmlGenerator.getHtml());
+
             out.flush();
         } catch (IOException ex) {
             logger.severe("IO Exception: " + ex.getMessage());
