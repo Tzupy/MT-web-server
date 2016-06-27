@@ -13,18 +13,18 @@ public class ServerTask implements Callable<Void> {
 
     private static final Logger logger = Logger.getLogger("ServerTask");
 
-    private final Socket client;
+    private final Socket clientSocket;
 
     /**
      * Class constructor receiving the client socket.
-     * @param client The client socket.
+     * @param clientSocket The client socket.
      */
-    public ServerTask(Socket client) {
-        this.client = client;
+    public ServerTask(Socket clientSocket) {
+        this.clientSocket = clientSocket;
     }
 
     /**
-     * This writes from feedback on the socket output stream.
+     * This writes some feedback on the socket output stream.
      * @return null
      * @throws Exception
      */
@@ -32,16 +32,16 @@ public class ServerTask implements Callable<Void> {
     public Void call() throws Exception {
         try {
             // write some feedback to the client
-            Writer out = new OutputStreamWriter(client.getOutputStream());
+            Writer out = new OutputStreamWriter(clientSocket.getOutputStream());
             out.write("Happily connected!\r\n");
-            out.write("Client IP is: " + client.getInetAddress().getHostAddress() + ":" + client.getPort() + "\r\n");
+            out.write("Client IP is: " + clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getPort() + "\r\n");
             out.flush();
         } catch (IOException ex) {
             logger.log(Level.SEVERE, "IO Exception: " + ex.getMessage());
         } finally {
-            if (client != null) {
+            if (clientSocket != null) {
                 try {
-                    client.close();
+                    clientSocket.close();
                     logger.log(Level.INFO, "Client disconnected");
                 } catch (IOException ex) {
                     logger.log(Level.SEVERE, "Couldn't close client socket: " + ex.getMessage());
