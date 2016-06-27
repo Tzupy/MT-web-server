@@ -1,9 +1,10 @@
 package com.tzupy.webserver;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.Socket;
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -11,7 +12,7 @@ import java.util.logging.Logger;
  */
 public class ServerTask implements Callable<Void> {
 
-    private static final Logger logger = Logger.getLogger("ServerTask");
+    private static final Logger logger = Logger.getLogger(ServerTask.class.getCanonicalName());
 
     private final Socket clientSocket;
 
@@ -34,17 +35,18 @@ public class ServerTask implements Callable<Void> {
             // write some feedback to the client
             Writer out = new OutputStreamWriter(clientSocket.getOutputStream());
             out.write("Happily connected!\r\n");
-            out.write("Client IP is: " + clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getPort() + "\r\n");
+            String ip = clientSocket.getInetAddress().getHostAddress();
+            out.write("Client address is: " + ip + ":" + clientSocket.getPort() + "\r\n");
             out.flush();
         } catch (IOException ex) {
-            logger.log(Level.SEVERE, "IO Exception: " + ex.getMessage());
+            logger.severe("IO Exception: " + ex.getMessage());
         } finally {
             if (clientSocket != null) {
                 try {
                     clientSocket.close();
-                    logger.log(Level.INFO, "Client disconnected");
+                    logger.info("Client disconnected");
                 } catch (IOException ex) {
-                    logger.log(Level.SEVERE, "Couldn't close client socket: " + ex.getMessage());
+                    logger.severe("Couldn't close client socket: " + ex.getMessage());
                 }
             }
         }
