@@ -51,7 +51,7 @@ public class HtmlGenerator {
      */
     public void addAnchor(String ref) {
         content.append(HtmlTag.paragraph.toStartTag());
-        content.append(HtmlTag.anchor.toStartTag(Arrays.asList(new AttrPair("href", "\"" + ref + "\""))));
+        content.append(HtmlTag.anchor.toStartTag(Arrays.asList(new AttrPair("href", "\"" + ref + "/\""))));
         content.append(ref);
         content.append(HtmlTag.anchor.toEndTag());
         content.append(HtmlTag.paragraph.toEndTag());

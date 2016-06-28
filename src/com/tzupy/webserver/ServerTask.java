@@ -98,7 +98,6 @@ public class ServerTask implements Callable<Void> {
 
                         // list all files
                         for (String line : url.list()) {
-                            File path = new File(url, line);
                             htmlGenerator.addAnchor(line);
                         }
 
