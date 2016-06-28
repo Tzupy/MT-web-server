@@ -47,7 +47,7 @@ public class HtmlGenerator {
     }
 
     /**
-     * Appends a line break to the document's content.
+     * Appends an anchor link to the document's content.
      */
     public void addAnchor(String ref) {
         content.append(HtmlTag.paragraph.toStartTag());
