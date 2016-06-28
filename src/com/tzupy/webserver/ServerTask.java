@@ -40,7 +40,8 @@ public class ServerTask implements Callable<Void> {
     }
 
     /**
-     * Adds the http request to the html.
+     * Parses the http request from the client.
+     * @param in the client's reader
      */
     public void handleRequest(Reader in) {
         httpRequest = new HttpRequest(in);
@@ -51,6 +52,67 @@ public class ServerTask implements Callable<Void> {
             logger.info("Client requested url: " + httpRequest.getUrl());
         } catch (IllegalArgumentException ex) {
             logger.severe("Client's request is malformed: " + ex.getMessage());
+        }
+    }
+
+    /**
+     * Creates an http response for the client.
+     * @param out the client's writer
+     * @param fileWriter the writer for a file
+     */
+    public void handleResponse(Writer out, OutputStream fileWriter) {
+        File url = httpRequest.getUrl();
+        httpResponse = new HttpResponse(url);
+
+        try {
+            if (!url.exists()) {
+                htmlGenerator.addHeader(HttpStatusCode.notFound);
+                out.write(httpResponse.getMimeHeader(HttpStatusCode.notFound, htmlGenerator.getHtml().length(), "text/html"));
+                out.write(htmlGenerator.getHtml());
+                out.flush();
+            } else if (!httpRequest.isMethodValid()) {
+                htmlGenerator.addHeader(HttpStatusCode.notImplemented);
+                out.write(httpResponse.getMimeHeader(HttpStatusCode.notImplemented, htmlGenerator.getHtml().length(), "text/html"));
+                out.write(htmlGenerator.getHtml());
+                out.flush();
+            } else if (!httpRequest.isProtocolValid()) {
+                htmlGenerator.addHeader(HttpStatusCode.badRequest);
+                out.write(httpResponse.getMimeHeader(HttpStatusCode.badRequest, htmlGenerator.getHtml().length(), "text/html"));
+                out.write(htmlGenerator.getHtml());
+                out.flush();
+            } else { // list all files in the current directory
+                if (url.isDirectory()) {
+                    String ip = clientSocket.getInetAddress().getHostAddress();
+                    htmlGenerator.addLine("Client address is: " + ip + ":" + clientSocket.getPort());
+
+                    if (!url.canRead()) {
+                        htmlGenerator.addLine("Client made no request");
+                    } else {
+                        htmlGenerator.addHeader("Index of " + url);
+
+                        for (String line : url.list()) {
+                            htmlGenerator.addAnchor(line);
+                        }
+
+                        String html = htmlGenerator.getHtml();
+                        out.write(httpResponse.getMimeHeader(HttpStatusCode.ok, html.length(), "text/html"));
+                        out.write(html);
+                        out.flush();
+                    }
+                } else { // provides a file to the client
+                    String contentType = URLConnection.getFileNameMap().getContentTypeFor(httpRequest.getFilename());
+                    try {
+                        out.write(httpResponse.getMimeHeader(HttpStatusCode.ok, httpResponse.getBody().length, contentType));
+                        out.flush();
+                        fileWriter.write(httpResponse.getBody());
+                        fileWriter.flush();
+                    } catch (IOException ex) {
+                        logger.severe("IO Exception: " + ex.getMessage());
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            logger.severe("IO Exception: " + ex.getMessage());
         }
     }
 
@@ -67,59 +129,7 @@ public class ServerTask implements Callable<Void> {
             Writer out = new OutputStreamWriter(fileWriter);
 
             handleRequest(in);
-
-            File url = httpRequest.getUrl();
-            httpResponse = new HttpResponse(url);
-
-            if (!url.exists()) {
-                htmlGenerator.addHeader(HttpStatusCode.notFound);
-                out.write(httpResponse.getMimeHeader(HttpStatusCode.notFound, htmlGenerator.getHtml().length(), "text/html"));
-                out.write(htmlGenerator.getHtml());
-                out.flush();
-            } else if (!httpRequest.isMethodValid()) {
-                htmlGenerator.addHeader(HttpStatusCode.notImplemented);
-                out.write(httpResponse.getMimeHeader(HttpStatusCode.notImplemented, htmlGenerator.getHtml().length(), "text/html"));
-                out.write(htmlGenerator.getHtml());
-                out.flush();
-            } else if (!httpRequest.isProtocolValid()) {
-                htmlGenerator.addHeader(HttpStatusCode.badRequest);
-                out.write(httpResponse.getMimeHeader(HttpStatusCode.badRequest, htmlGenerator.getHtml().length(), "text/html"));
-                out.write(htmlGenerator.getHtml());
-                out.flush();
-            } else {
-                if (url.isDirectory()) {
-                    String ip = clientSocket.getInetAddress().getHostAddress();
-                    htmlGenerator.addLine("Client address is: " + ip + ":" + clientSocket.getPort());
-
-                    if (!url.canRead()) {
-                        htmlGenerator.addLine("Client made no request");
-                    } else {
-                        htmlGenerator.addHeader("Index of " + url);
-
-                        // list all files
-                        for (String line : url.list()) {
-                            htmlGenerator.addAnchor(line);
-                        }
-
-                        String html = htmlGenerator.getHtml();
-                        out.write(httpResponse.getMimeHeader(HttpStatusCode.ok, html.length(), "text/html"));
-                        out.write(html);
-                        out.flush();
-                    }
-                } else {
-                    String contentType = URLConnection.getFileNameMap().getContentTypeFor(httpRequest.getFilename());
-                    try {
-                        out.write(httpResponse.getMimeHeader(HttpStatusCode.ok, httpResponse.getBody().length, contentType));
-                        out.flush();
-                        fileWriter.write(httpResponse.getBody());
-                        fileWriter.flush();
-                    } catch (IOException ex) {
-                        logger.severe("IO Exception: " + ex.getMessage());
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            logger.severe("IO Exception: " + ex.getMessage());
+            handleResponse(out, fileWriter);
         } finally {
             if (clientSocket != null) {
                 try {
