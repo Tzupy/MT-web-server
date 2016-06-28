@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="MT-web-server:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/MT_web_server_jar</output-path>
+    <root id="archive" name="MT-web-server.jar">
+      <element id="module-output" name="MT-web-server" />
+    </root>
+  </artifact>
+</component>
