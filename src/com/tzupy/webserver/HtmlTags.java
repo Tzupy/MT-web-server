@@ -16,6 +16,7 @@ abstract class HtmlTag {
     public final static Tag lineBreak = new Tag("br");
     public final static Tag anchor = new Tag("a");
     public final static Tag header = new Tag("h1");
+    public final static Tag image = new Tag("img");
 }
 
 /**

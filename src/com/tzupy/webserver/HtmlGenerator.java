@@ -1,6 +1,15 @@
 package com.tzupy.webserver;
 
 import java.util.Arrays;
+import java.util.List;
+
+/**
+ * This class defines known resource types.
+ */
+abstract class ResourceType {
+    public final static String directory = "/resources/directory.png";
+    public final static String file = "/resources/file.png";
+}
 
 /**
  * This class generates the content of an HTML document.
@@ -47,14 +56,25 @@ public class HtmlGenerator {
     }
 
     /**
+     * Appends an image to the document's content.
+     */
+    public void addImage(String resource) {
+        List<AttrPair> attributes = Arrays.asList(
+                new AttrPair("src", "\"" + resource + "\""),
+                new AttrPair("width", "20"),
+                new AttrPair("height", "20"),
+                new AttrPair("hspace", "5"));
+        content.append(HtmlTag.image.toStartTag(attributes));
+        content.append(HtmlTag.anchor.toEndTag());
+    }
+
+    /**
      * Appends an anchor link to the document's content.
      */
     public void addAnchor(String ref) {
-        content.append(HtmlTag.paragraph.toStartTag());
         content.append(HtmlTag.anchor.toStartTag(Arrays.asList(new AttrPair("href", "\"" + ref + "/\""))));
         content.append(ref);
         content.append(HtmlTag.anchor.toEndTag());
-        content.append(HtmlTag.paragraph.toEndTag());
     }
 
     /**

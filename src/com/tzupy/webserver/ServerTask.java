@@ -91,7 +91,14 @@ public class ServerTask implements Callable<Void> {
                         htmlGenerator.addHeader("Index of " + url);
 
                         for (String line : url.list()) {
+                            File file = new File(url, line);
+                            if (file.isDirectory()) {
+                                htmlGenerator.addImage(ResourceType.directory);
+                            } else {
+                                htmlGenerator.addImage(ResourceType.file);
+                            }
                             htmlGenerator.addAnchor(line);
+                            htmlGenerator.addLineBreak();
                         }
 
                         String html = htmlGenerator.getHtml();
