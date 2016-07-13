@@ -3,6 +3,8 @@ package com.tzupy.webserver;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.logging.Logger;
 
 /**
@@ -69,7 +71,11 @@ public class HttpRequest {
             throw new IllegalArgumentException("Malformed request.");
         }
         method = tokens[0];
-        filename = tokens[1];
+        try {
+            filename = URLDecoder.decode(tokens[1], "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            logger.warning("Decoding Exception: " + ex.getMessage());
+        }
         url = new File(root, filename);
         protocol = tokens[2];
 
