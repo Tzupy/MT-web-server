@@ -69,11 +69,11 @@ public class HtmlGenerator {
     }
 
     /**
-     * Appends an anchor link to the document's content.
+     * Appends an anchor link with text to the document's content.
      */
-    public void addAnchor(String ref) {
-        content.append(HtmlTag.anchor.toStartTag(Arrays.asList(new AttrPair("href", "\"" + ref + "/\""))));
-        content.append(ref);
+    public void addAnchor(String ref, String text) {
+        content.append(HtmlTag.anchor.toStartTag(Arrays.asList(new AttrPair("href", "\"" + ref + "\""))));
+        content.append(text);
         content.append(HtmlTag.anchor.toEndTag());
     }
 

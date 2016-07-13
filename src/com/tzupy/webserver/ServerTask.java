@@ -84,20 +84,29 @@ public class ServerTask implements Callable<Void> {
                 if (url.isDirectory()) {
                     String ip = clientSocket.getInetAddress().getHostAddress();
                     htmlGenerator.addLine("Client address is: " + ip + ":" + clientSocket.getPort());
+                    htmlGenerator.addLineBreak();
 
                     if (!url.canRead()) {
                         htmlGenerator.addLine("Client made no request");
+                        htmlGenerator.addLineBreak();
                     } else {
                         htmlGenerator.addHeader("Index of " + url);
+                        htmlGenerator.addLineBreak();
 
+                        if (!url.getCanonicalPath().equals(root.getCanonicalPath())) {
+                            htmlGenerator.addAnchor(".." + File.separator, "Back");
+                            htmlGenerator.addLineBreak();
+                            htmlGenerator.addLineBreak();
+                        }
                         for (String line : url.list()) {
                             File file = new File(url, line);
                             if (file.isDirectory()) {
-                                htmlGenerator.addImage(ResourceType.directory);
+                                //htmlGenerator.addImage(ResourceType.directory);
+                                htmlGenerator.addAnchor(line + File.separator, line + File.separator);
                             } else {
-                                htmlGenerator.addImage(ResourceType.file);
+                                //htmlGenerator.addImage(ResourceType.file);
+                                htmlGenerator.addAnchor(line, line);
                             }
-                            htmlGenerator.addAnchor(line);
                             htmlGenerator.addLineBreak();
                         }
 
