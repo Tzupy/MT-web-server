@@ -3,6 +3,7 @@ package com.tzupy.webserver;
 import java.io.*;
 import java.net.Socket;
 import java.net.URLConnection;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
@@ -80,7 +81,7 @@ public class ServerTask implements Callable<Void> {
                 out.write(httpResponse.getMimeHeader(HttpStatusCode.badRequest, htmlGenerator.getHtml().length(), "text/html"));
                 out.write(htmlGenerator.getHtml());
                 out.flush();
-            } else { // list all files in the current directory
+            } else { // valid request
                 if (url.isDirectory()) {
                     String ip = clientSocket.getInetAddress().getHostAddress();
                     htmlGenerator.addLine("Client address is: " + ip + ":" + clientSocket.getPort());
@@ -93,20 +94,27 @@ public class ServerTask implements Callable<Void> {
                         htmlGenerator.addHeader("Index of " + url);
                         htmlGenerator.addLineBreak();
 
+                        // add back navigation
                         if (!url.getCanonicalPath().equals(root.getCanonicalPath())) {
                             htmlGenerator.addAnchor(".." + File.separator, "Back");
                             htmlGenerator.addLineBreak();
                             htmlGenerator.addLineBreak();
                         }
-                        for (String line : url.list()) {
-                            File file = new File(url, line);
-                            if (file.isDirectory()) {
-                                //htmlGenerator.addImage(ResourceType.directory);
-                                htmlGenerator.addAnchor(line + File.separator, line + File.separator);
-                            } else {
-                                //htmlGenerator.addImage(ResourceType.file);
-                                htmlGenerator.addAnchor(line, line);
-                            }
+                        // list directories in alphabetical order
+                        File[] directories = url.listFiles(File::isDirectory);
+                        Arrays.sort(directories);
+                        for (File dir : directories) {
+                            //htmlGenerator.addImage(ResourceType.directory);
+                            htmlGenerator.addAnchor(dir.getName() + File.separator, dir.getName() + File.separator);
+                            htmlGenerator.addLineBreak();
+                        }
+
+                        // list files in alphabetical order
+                        File[] files = url.listFiles(File::isFile);
+                        Arrays.sort(files);
+                        for (File file : files) {
+                            //htmlGenerator.addImage(ResourceType.file);
+                            htmlGenerator.addAnchor(file.getName(), file.getName());
                             htmlGenerator.addLineBreak();
                         }
 
