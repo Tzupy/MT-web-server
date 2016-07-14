@@ -8,7 +8,7 @@ import java.util.List;
  */
 abstract class ResourcePath {
     public final static String directory = "https://raw.githubusercontent.com/Tzupy/MT-web-server/master/resources/directory.png";
-    public final static String file = "https://raw.githubusercontent.com/Tzupy/MT-web-server/master/resources/directory.png";
+    public final static String file = "https://raw.githubusercontent.com/Tzupy/MT-web-server/master/resources/file.png";
 }
 
 /**
