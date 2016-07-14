@@ -4,11 +4,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * This class defines known resource types.
+ * This class defines paths for known resources.
  */
-abstract class ResourceType {
-    public final static String directory = "/resources/directory.png";
-    public final static String file = "/resources/file.png";
+abstract class ResourcePath {
+    public final static String directory = "https://raw.githubusercontent.com/Tzupy/MT-web-server/master/resources/directory.png";
+    public final static String file = "https://raw.githubusercontent.com/Tzupy/MT-web-server/master/resources/directory.png";
 }
 
 /**

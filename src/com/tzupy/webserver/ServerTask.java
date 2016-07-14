@@ -104,7 +104,7 @@ public class ServerTask implements Callable<Void> {
                         File[] directories = url.listFiles(File::isDirectory);
                         Arrays.sort(directories);
                         for (File dir : directories) {
-                            //htmlGenerator.addImage(ResourceType.directory);
+                            htmlGenerator.addImage(ResourcePath.directory);
                             htmlGenerator.addAnchor(dir.getName() + File.separator, dir.getName() + File.separator);
                             htmlGenerator.addLineBreak();
                         }
@@ -113,7 +113,7 @@ public class ServerTask implements Callable<Void> {
                         File[] files = url.listFiles(File::isFile);
                         Arrays.sort(files);
                         for (File file : files) {
-                            //htmlGenerator.addImage(ResourceType.file);
+                            htmlGenerator.addImage(ResourcePath.file);
                             htmlGenerator.addAnchor(file.getName(), file.getName());
                             htmlGenerator.addLineBreak();
                         }

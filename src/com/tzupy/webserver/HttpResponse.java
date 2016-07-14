@@ -37,7 +37,9 @@ public class HttpResponse {
         sb.append("Server: Web server\r\n");
         sb.append("Last-Modified: " + new Date(root.lastModified()) + "\r\n");
         sb.append("Content-Length: " + contentLength + "\r\n");
-        sb.append("Content-Type: " + contentType + "; charset=utf-8\r\n\r\n");
+        if (contentType != null) {
+            sb.append("Content-Type: " + contentType + "; charset=utf-8\r\n\r\n");
+        }
         return sb.toString();
     }
 
