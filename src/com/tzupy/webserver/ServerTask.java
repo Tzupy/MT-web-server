@@ -1,8 +1,8 @@
 package com.tzupy.webserver;
 
+import javax.activation.MimetypesFileTypeMap;
 import java.io.*;
 import java.net.Socket;
-import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
@@ -124,7 +124,7 @@ public class ServerTask implements Callable<Void> {
                         out.flush();
                     }
                 } else { // provides a file to the client
-                    String contentType = URLConnection.getFileNameMap().getContentTypeFor(httpRequest.getFilename());
+                    String contentType = new MimetypesFileTypeMap().getContentType(httpRequest.getUrl());
                     try {
                         out.write(httpResponse.getMimeHeader(HttpStatusCode.ok, httpResponse.getBody().length, contentType));
                         out.flush();
