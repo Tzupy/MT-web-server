@@ -1,4 +1,6 @@
-package com.tzupy.webserver;
+package com.tzupy.http;
+
+import com.tzupy.webserver.ServerTask;
 
 import java.io.File;
 import java.io.IOException;

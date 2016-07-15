@@ -1,4 +1,6 @@
-package com.tzupy.webserver;
+package com.tzupy.http;
+
+import com.tzupy.webserver.ServerTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,16 +8,6 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.logging.Logger;
-
-/**
- * This class defines supported http request methods.
- */
-abstract class RequestMethod {
-    public final static String get = "GET";
-    public final static String head = "HEAD";
-    public final static String post = "POST";
-    public final static String delete = "DELETE";
-}
 
 /**
  * This class parses an http request from the client.
@@ -80,7 +72,7 @@ public class HttpRequest {
         protocol = tokens[2];
 
         // check method validity
-        if (!method.equals(RequestMethod.get)) {
+        if (!method.equals(HttpRequestMethod.get)) {
             methodValid = false;
             throw new IllegalArgumentException("Unsupported method.");
         } else {

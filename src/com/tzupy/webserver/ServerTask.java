@@ -1,19 +1,21 @@
 package com.tzupy.webserver;
 
+import com.tzupy.html.HtmlContent;
+import com.tzupy.html.HtmlGenerator;
+import com.tzupy.html.Table;
+import com.tzupy.http.HttpRequest;
+import com.tzupy.http.HttpResponse;
+import com.tzupy.http.HttpStatusCode;
+import com.tzupy.utils.FileUtils;
+import com.tzupy.utils.ResourcePath;
+
 import javax.activation.MimetypesFileTypeMap;
 import java.io.*;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
-
-abstract class HttpStatusCode {
-    public final static String ok = "200 OK";
-    public final static String badRequest = "400 Bad Request";
-    public final static String notFound = "404 Not Found";
-    public final static String internalError = "500 Internal Server Error";
-    public final static String notImplemented = "501 Not Implemented";
-}
 
 /**
  * This class creates a task to be run by the web server.
@@ -26,6 +28,7 @@ public class ServerTask implements Callable<Void> {
 
     private final File root;
 
+    private final HtmlContent htmlContent = new HtmlContent();
     private final HtmlGenerator htmlGenerator = new HtmlGenerator("Web server");
     private HttpRequest httpRequest;
     private HttpResponse httpResponse;
@@ -67,58 +70,67 @@ public class ServerTask implements Callable<Void> {
 
         try {
             if (!url.exists()) {
-                htmlGenerator.addHeader(HttpStatusCode.notFound);
-                out.write(httpResponse.getMimeHeader(HttpStatusCode.notFound, htmlGenerator.getHtml().length(), "text/html"));
-                out.write(htmlGenerator.getHtml());
+                htmlGenerator.addContent(htmlContent.asHeading(HttpStatusCode.notFound));
+                String html = htmlGenerator.generateHtml();
+                out.write(httpResponse.getMimeHeader(HttpStatusCode.notFound, html.length(), "text/html"));
+                out.write(html);
                 out.flush();
             } else if (!httpRequest.isMethodValid()) {
-                htmlGenerator.addHeader(HttpStatusCode.notImplemented);
-                out.write(httpResponse.getMimeHeader(HttpStatusCode.notImplemented, htmlGenerator.getHtml().length(), "text/html"));
-                out.write(htmlGenerator.getHtml());
+                htmlGenerator.addContent(htmlContent.asHeading(HttpStatusCode.notImplemented));
+                String html = htmlGenerator.generateHtml();
+                out.write(httpResponse.getMimeHeader(HttpStatusCode.notImplemented, html.length(), "text/html"));
+                out.write(html);
                 out.flush();
             } else if (!httpRequest.isProtocolValid()) {
-                htmlGenerator.addHeader(HttpStatusCode.badRequest);
-                out.write(httpResponse.getMimeHeader(HttpStatusCode.badRequest, htmlGenerator.getHtml().length(), "text/html"));
-                out.write(htmlGenerator.getHtml());
+                htmlGenerator.addContent(htmlContent.asHeading(HttpStatusCode.badRequest));
+                String html = htmlGenerator.generateHtml();
+                out.write(httpResponse.getMimeHeader(HttpStatusCode.badRequest, html.length(), "text/html"));
+                out.write(html);
                 out.flush();
             } else { // valid request
                 if (url.isDirectory()) {
-                    String ip = clientSocket.getInetAddress().getHostAddress();
-                    htmlGenerator.addLine("Client address is: " + ip + ":" + clientSocket.getPort());
-                    htmlGenerator.addLineBreak();
-
                     if (!url.canRead()) {
                         htmlGenerator.addLine("Client made no request");
-                        htmlGenerator.addLineBreak();
+                        htmlGenerator.addContent(htmlContent.asLineBreak());
                     } else {
-                        htmlGenerator.addHeader("Index of " + url);
-                        htmlGenerator.addLineBreak();
+                        //String ip = clientSocket.getInetAddress().getHostAddress();
+                        //htmlGenerator.addLine("Client address is: " + ip + ":" + clientSocket.getPort());
+
+                        htmlGenerator.addContent(htmlContent.asHeading("Index of " + httpRequest.getFilename()));
+
+                        Table table = new Table();
+                        table.setHeader(new String[] { "Name", "Last Modified", "Size" });
 
                         // add back navigation
                         if (!url.getCanonicalPath().equals(root.getCanonicalPath())) {
-                            htmlGenerator.addAnchor(".." + File.separator, "Back");
-                            htmlGenerator.addLineBreak();
-                            htmlGenerator.addLineBreak();
+                            String name = htmlContent.asAnchor(".." + File.separator, "UP");
+                            table.addRow(new String[] { name, "", "" } );
                         }
+
                         // list directories in alphabetical order
                         File[] directories = url.listFiles(File::isDirectory);
                         Arrays.sort(directories);
                         for (File dir : directories) {
-                            htmlGenerator.addImage(ResourcePath.directory);
-                            htmlGenerator.addAnchor(dir.getName() + File.separator, dir.getName() + File.separator);
-                            htmlGenerator.addLineBreak();
+                            String icon = htmlContent.asImage(ResourcePath.directory, 20, 20, 5);
+                            String anchor = htmlContent.asAnchor(dir.getName() + File.separator, dir.getName());
+                            String lastModified = FileUtils.getFileLastModifiedFormatted(new Date(dir.lastModified()));
+                            table.addRow(new String[] { icon + anchor, lastModified, "-" } );
                         }
 
                         // list files in alphabetical order
                         File[] files = url.listFiles(File::isFile);
                         Arrays.sort(files);
                         for (File file : files) {
-                            htmlGenerator.addImage(ResourcePath.file);
-                            htmlGenerator.addAnchor(file.getName(), file.getName());
-                            htmlGenerator.addLineBreak();
+                            String icon = htmlContent.asImage(ResourcePath.file, 20, 20, 5);
+                            String anchor = htmlContent.asAnchor(file.getName(), file.getName());
+                            String lastModified = FileUtils.getFileLastModifiedFormatted(new Date(file.lastModified()));
+                            String size = FileUtils.getFileSizeFormatted(file.length());
+                            table.addRow(new String[] { icon + anchor, lastModified, size } );
                         }
 
-                        String html = htmlGenerator.getHtml();
+                        htmlGenerator.addContent(htmlContent.asTable(table));
+
+                        String html = htmlGenerator.generateHtml();
                         out.write(httpResponse.getMimeHeader(HttpStatusCode.ok, html.length(), "text/html"));
                         out.write(html);
                         out.flush();

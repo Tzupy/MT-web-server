@@ -5,6 +5,12 @@ body {
 	color: #444;
 	font: 100%/30px 'Helvetica Neue', helvetica, arial, sans-serif;
 	text-shadow: 0 1px 0 #fff;
+	float: left;
+	padding: 20px;
+}
+
+h1 {
+	display: inline-block;
 }
 
 strong {
@@ -21,7 +27,6 @@ table {
 	box-shadow: inset 0 1px 0 #fff;
 	font-size: 12px;
 	line-height: 24px;
-	margin: 30px auto;
 	text-align: left;
 	width: 800px;
 }	
